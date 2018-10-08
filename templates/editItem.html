@@ -1,0 +1,42 @@
+{% extends "main.html" %}
+{% block content %}
+<div id ="backg">
+<div class="row top-menu">
+		<div class="col-md-10"></div>
+		<div class="col-md-2 text-right">
+			<a href="{{url_for('showLogin')}}">Click Here to Log in </a>
+		</div>
+	</div>
+	<div class="row divider blue">
+		<div class="col-md-12"></div>
+	</div>
+	<div class="row banner main">
+		<div class="col-md-1"></div>
+		<div class="col-md-11 padding-none">
+			<h1>Catalog App</h1>
+		</div>
+	</div>
+	<h1> Edit Item </h1>
+<form action="{{ url_for('editItem',item_title=item.title)}}" method = 'post'>
+
+<dl>
+	<dt>Title:</dt>
+		<dd><input type ='text' size='30' name='title' value = '{{item.title }}'></dd>
+	<dt>Description:</dt>
+		<dd><textarea name = 'description' rows='5' cols='40' >{{item.description }}</textarea></dd>
+	<dt>Category:</dt>
+		<dd><select name='cat_id'><option selected value="{{category.id}}">{{category.name}}</option>
+			{% for i in categories %}
+			<option value="{{i.id}}">{{i.name}}</option>
+			{% endfor %}
+		</select></dd>
+
+
+</dl>
+
+
+<input type='submit' value='Edit'>
+
+</form>
+</div>
+{% endblock %}

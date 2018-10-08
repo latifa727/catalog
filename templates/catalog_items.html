@@ -1,0 +1,48 @@
+<html>
+<head>
+	</head>
+
+	
+	<body>
+	<div class = 'pane'>
+		<div class = 'header'>
+		<a href = '{{url_for('newItem') }}'>Add Item</a>
+		<h1>Latest Items</h1>
+	</div>
+
+
+
+<div class = 'flash'>
+		      {% with messages = get_flashed_messages() %}
+      {% if messages %}
+          
+        <ul>
+        {% for message in messages %}
+            <li> <strong> {{ message }} </strong> </li>
+        {% endfor %}
+        </ul>
+        {% endif %}
+    {% endwith %}
+
+</div>
+
+
+		{% for i in items %}
+    <div class = 'nameAndPrice'>
+		<span class = 'name'><p>{{i.title}}({{i.cat_id}})</p></span>
+	</div>
+
+		{% endfor %}
+
+
+		
+		
+
+</div>
+</div>
+	</body>
+
+
+
+
+</html>
