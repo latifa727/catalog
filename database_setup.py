@@ -33,8 +33,10 @@ class Category(Base):
             'id': self.id,
         }
 
+
 def _get_date():
     return datetime.datetime.now()
+
 
 class Item(Base):
     __tablename__ = 'category_item'

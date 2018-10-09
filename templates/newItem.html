@@ -22,9 +22,9 @@
 
 <dl>
 	<dt>Title:</dt>
-		<dd><input type ='text' size='30' name='title' ></dd>
+		<dd><input type ='text' size='30' name='title' required></dd>
 	<dt>Description:</dt>
-		<dd><textarea name = 'description' rows='5' cols='40' ></textarea></dd>
+		<dd><textarea name = 'description' rows='5' cols='40' required ></textarea></dd>
 	<dt>Category:</dt>
 		<dd><select name='cat_id'>
 			{% for i in categories %}

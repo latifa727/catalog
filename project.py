@@ -1,4 +1,10 @@
-from flask import Flask, render_template, request, redirect, jsonify, url_for, flash
+from flask import (Flask,
+                   render_template,
+                   request,
+                   redirect,
+                   jsonify,
+                   url_for,
+                   flash)
 
 
 from sqlalchemy import create_engine, desc
@@ -53,7 +59,7 @@ def gconnect():
 
     try:
         # Upgrade the authorization code into a credentials object
-        oauth_flow = flow_from_clientsecrets('client_secret_last.json', scope='')
+        oauth_flow = flow_from_clientsecrets('client_secret_last.json', scope='')  # noqa
         oauth_flow.redirect_uri = 'postmessage'
         credentials = oauth_flow.step2_exchange(code)
     except FlowExchangeError:
@@ -93,7 +99,7 @@ def gconnect():
     stored_access_token = login_session.get('access_token')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_access_token is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is already connected.'),
+        response = make_response(json.dumps('Current user is already connected.'),  # noqa
                                  200)
         response.headers['Content-Type'] = 'application/json'
         return response
@@ -116,8 +122,8 @@ def gconnect():
 
     user_id = getUserID(login_session['email'])
     if not user_id:
-      user_id = createUser(login_session)
-    login_session['user_id']= user_id
+        user_id = createUser(login_session)
+        login_session['user_id'] = user_id
 
     output = ''
     output += '<h1>Welcome, '
@@ -195,14 +201,17 @@ def CategoryMenuJSON(Category_id):
 
 @app.route('/Category/<int:Category_id>/menu/<int:item_id>/JSON')
 def ItemJSON(Category_id, item_id):
-    Menu_Item = session.query(Item).filter_by(id=item_id).one()
+    Category_Item = session.query(Item).filter_by(id=item_id).one()
     return jsonify(Category_Item=Category_Item.serialize)
 
 
-@app.route('/Category/JSON')
+@app.route('/catalog/JSON')
 def CategorysJSON():
     Categorys = session.query(Category).all()
-    return jsonify(Categorys=[r.serialize for r in Categorys])
+    for r in Categorys:
+        items = session.query(Item).filter_by(
+        cat_id=r.id).all()
+        return jsonify(Categorys=[r.serialize for r in Categorys], Items=[i.serialize for i in items])
 
 
 # Show all categories in catalog
@@ -211,44 +220,48 @@ def categoryMenuIndex():
     categories = session.query(Category)
     items = session.query(Item).order_by(desc(Item.created_date)).limit(9)
     if 'username' not in login_session:
-        return render_template('publicindex.html', categories = categories, items = items)
+        return render_template('publicindex.html', categories=categories, items=items)  # noqa
     else:
-        return render_template('index.html', categories = categories, items = items)
+        return render_template('index.html', categories=categories, items=items)  # noqa
+
 
 # Show all items in specific category
-@app.route('/catalog/<string:category_name>/items/',methods=['GET','POST'])
+@app.route('/catalog/<string:category_name>/items/', methods=['GET', 'POST'])
 def categoryitems(category_name):
     category = session.query(Category).filter_by(name=category_name).one()
     items = session.query(Item).filter_by(cat_id=category.id)
     no_items = session.query(Item).filter_by(cat_id=category.id).count()
-    return render_template('items.html', category = category, items = items, no_items=no_items)
+    return render_template('items.html', category=category, items=items, no_items=no_items)  # noqa
+
 
 # View the details for one item
-@app.route('/catalog/<string:category_name>/<string:item_title>/',methods=['GET','POST'])
-def viewItem(item_title,category_name):
+@app.route('/catalog/<string:category_name>/<string:item_title>/', methods=['GET', 'POST'])  # noqa
+def viewItem(item_title, category_name):
     item = session.query(Item).filter_by(title=item_title).one()
-    if 'username' not in login_session:
-        return render_template('publicviewItem.html', item = item)
-    else :
-        return render_template('viewItem.html', item = item)
+    if 'username' not in login_session or 'username' != item.user_id:
+        return render_template('publicviewItem.html', item=item)
+    else:
+        return render_template('viewItem.html', item=item)
+
 
 # Creat new item
-@app.route('/catalog/new/',methods=['GET','POST'])
+@app.route('/catalog/new/', methods=['GET', 'POST'])
 def newItem():
     if 'username' not in login_session:
         return redirect('/login')
     categories = session.query(Category)
     if request.method == 'POST':
-        newItem = Item(title = request.form['title'], description = request.form['description'], cat_id = request.form['cat_id'])
+        newItem = Item(title=request.form['title'], description=request.form['description'], cat_id=request.form['cat_id'])  # noqa
         session.add(newItem)
         session.commit()
-        flash('New Menu %s Item Successfully Created' % (newItem.name))
-        return redirect(url_for('categoryMenu'))
+        flash('New Menu %s Item Successfully Created' % (newItem.title))
+        return redirect(url_for('categoryMenuIndex'))
     else:
-        return render_template('newItem.html',categories= categories)
+        return render_template('newItem.html', categories=categories)
+
 
 # Edit an item
-@app.route('/catalog/<string:item_title>/edit/',methods=['GET','POST'])
+@app.route('/catalog/<string:item_title>/edit/', methods=['GET', 'POST'])
 def editItem(item_title):
     if 'username' not in login_session:
         return redirect('/login')
@@ -265,12 +278,13 @@ def editItem(item_title):
         session.add(editedItem)
         session.commit()
         flash("Menu item has been edited!")
-        return redirect(url_for('categoryMenu'))
+        return redirect(url_for('categoryMenuIndex'))
     else:
-        return render_template('editItem.html', category=category, item = editedItem, categories= categories)
+        return render_template('editItem.html', category=category, item=editedItem, categories=categories)  # noqa
+
 
 # Delete an item
-@app.route('/catalog/<string:item_title>/delete/',methods=['GET','POST'])
+@app.route('/catalog/<string:item_title>/delete/', methods=['GET', 'POST'])
 def deleteItem(item_title):
     if 'username' not in login_session:
         return redirect('/login')
@@ -279,9 +293,9 @@ def deleteItem(item_title):
         session.delete(deletedItem)
         session.commit()
         flash("Item has been deleted!")
-        return redirect(url_for('categoryMenu'))
+        return redirect(url_for('categoryMenuIndex'))
     else:
-        return render_template('deleteItem.html', item = deletedItem)
+        return render_template('deleteItem.html', item=deletedItem)
 
 
 if __name__ == '__main__':
