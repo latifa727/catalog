@@ -30,7 +30,7 @@ APPLICATION_NAME = "Catalog App"
 
 
 # Connect to Database and create database session
-engine = create_engine('sqlite:///catalogitems.db')
+engine = create_engine('sqlite:///catalogitems.db',connect_args={'check_same_thread':False})
 Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
@@ -190,28 +190,12 @@ def gdisconnect():
         return response
 
 
-# JSON APIs to view Category Information
-@app.route('/Category/<int:Category_id>/menu/JSON')
-def CategoryMenuJSON(Category_id):
-    Category = session.query(Category).filter_by(id=Category_id).one()
-    items = session.query(Item).filter_by(
-        Category_id=Category_id).all()
-    return jsonify(Items=[i.serialize for i in items])
-
-
-@app.route('/Category/<int:Category_id>/menu/<int:item_id>/JSON')
-def ItemJSON(Category_id, item_id):
-    Category_Item = session.query(Item).filter_by(id=item_id).one()
-    return jsonify(Category_Item=Category_Item.serialize)
-
-
+# JSON APIs to view Category and items Information
 @app.route('/catalog/JSON')
 def CategorysJSON():
     Categorys = session.query(Category).all()
-    for r in Categorys:
-        items = session.query(Item).filter_by(
-        cat_id=r.id).all()
-        return jsonify(Categorys=[r.serialize for r in Categorys], Items=[i.serialize for i in items])
+    items = session.query(Item).all()
+    return jsonify(Categorys=[r.serialize for r in Categorys], Items=[i.serialize for i in items])  # noqa
 
 
 # Show all categories in catalog
@@ -238,7 +222,7 @@ def categoryitems(category_name):
 @app.route('/catalog/<string:category_name>/<string:item_title>/', methods=['GET', 'POST'])  # noqa
 def viewItem(item_title, category_name):
     item = session.query(Item).filter_by(title=item_title).one()
-    if 'username' not in login_session or 'username' != item.user_id:
+    if 'username' not in login_session or 'user_id' != item.user_id:
         return render_template('publicviewItem.html', item=item)
     else:
         return render_template('viewItem.html', item=item)
@@ -251,7 +235,10 @@ def newItem():
         return redirect('/login')
     categories = session.query(Category)
     if request.method == 'POST':
-        newItem = Item(title=request.form['title'], description=request.form['description'], cat_id=request.form['cat_id'])  # noqa
+        newItem = Item(title=request.form['title'],
+        description=request.form['description'],
+        cat_id=request.form['cat_id'],
+        user_id = 'user_id')
         session.add(newItem)
         session.commit()
         flash('New Menu %s Item Successfully Created' % (newItem.title))
@@ -263,9 +250,9 @@ def newItem():
 # Edit an item
 @app.route('/catalog/<string:item_title>/edit/', methods=['GET', 'POST'])
 def editItem(item_title):
-    if 'username' not in login_session:
-        return redirect('/login')
     editedItem = session.query(Item).filter_by(title=item_title).one()
+    if 'username' not in login_session or 'user_id' != editedItem.user_id:
+        return redirect('/login')
     category = session.query(Category).filter_by(id=editedItem.cat_id).one()
     categories = session.query(Category)
     if request.method == 'POST':
@@ -286,9 +273,9 @@ def editItem(item_title):
 # Delete an item
 @app.route('/catalog/<string:item_title>/delete/', methods=['GET', 'POST'])
 def deleteItem(item_title):
-    if 'username' not in login_session:
-        return redirect('/login')
     deletedItem = session.query(Item).filter_by(title=item_title).one()
+    if 'username' not in login_session or 'user_id' != deletedItem.user_id:
+        return redirect('/login')
     if request.method == 'POST':
         session.delete(deletedItem)
         session.commit()

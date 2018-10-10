@@ -20,7 +20,7 @@ session = DBSession()
 
 
 # Create  user
-User1 = User(name="latifa", email="latifa@udacity.com")
+User1 = User(name="latifa", email="lateifah727@gmail.com")
 session.add(User1)
 session.commit()
 
