@@ -30,7 +30,7 @@ APPLICATION_NAME = "Catalog App"
 
 
 # Connect to Database and create database session
-engine = create_engine('sqlite:///catalogitems.db',connect_args={'check_same_thread':False})
+engine = create_engine('sqlite:///catalogitems.db', connect_args={'check_same_thread': False})  # noqa
 Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
@@ -232,13 +232,13 @@ def viewItem(item_title, category_name):
 @app.route('/catalog/new/', methods=['GET', 'POST'])
 def newItem():
     if 'username' not in login_session:
-        return redirect('/login')
+        return redirect('/')
     categories = session.query(Category)
     if request.method == 'POST':
         newItem = Item(title=request.form['title'],
-        description=request.form['description'],
-        cat_id=request.form['cat_id'],
-        user_id = 'user_id')
+                       description=request.form['description'],
+                       cat_id=request.form['cat_id'],
+                       user_id='user_id')
         session.add(newItem)
         session.commit()
         flash('New Menu %s Item Successfully Created' % (newItem.title))
@@ -252,7 +252,7 @@ def newItem():
 def editItem(item_title):
     editedItem = session.query(Item).filter_by(title=item_title).one()
     if 'username' not in login_session or 'user_id' != editedItem.user_id:
-        return redirect('/login')
+        return redirect('/')
     category = session.query(Category).filter_by(id=editedItem.cat_id).one()
     categories = session.query(Category)
     if request.method == 'POST':
@@ -275,7 +275,7 @@ def editItem(item_title):
 def deleteItem(item_title):
     deletedItem = session.query(Item).filter_by(title=item_title).one()
     if 'username' not in login_session or 'user_id' != deletedItem.user_id:
-        return redirect('/login')
+        return redirect('/')
     if request.method == 'POST':
         session.delete(deletedItem)
         session.commit()
