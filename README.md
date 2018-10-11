@@ -26,6 +26,7 @@ If you didn't install virtual machine to your pc go to the installation part.
 •	Install Vagrant (https://www.vagrantup.com/downloads.html)
 •	Install GitBash (https://git-scm.com/downloads) to run the commands
 •	Download the project to your vagrant folder
+•	There are many dependencies you need to install to run the project successfully, you can find in this link (https://github.com/udacity/fullstack-nanodegree-vm/blob/master/vagrant/Vagrantfile)
 •	Open the git bash terminal and run the same coomand in Running the project part
 
 ## Support
